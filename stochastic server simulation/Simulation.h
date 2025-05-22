@@ -50,9 +50,9 @@ private:
 	void handleDeparture(int pid);
 
 public:
-	Simulation(double arrivalMean=1, double serviceMean=1, int packets=20);
+	Simulation(double arrivalMean, double serviceMean, int seed, int packets);
 
-	void Simulation::run(); // main simulation loop
+	void run(); // main simulation loop
 	string eventLogs() { return eventLogStream.str(); }
 	void printStatistics();
 };

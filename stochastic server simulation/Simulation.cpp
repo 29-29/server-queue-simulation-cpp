@@ -1,9 +1,9 @@
 #include "Simulation.h"
 
-Simulation::Simulation(double arrivalMean=1, double serviceMean=1, int packets=20):iA(arrivalMean),sD(serviceMean) {
+Simulation::Simulation(double arrivalMean=1, double serviceMean=1, int seed=time(nullptr), int packets=20):iA(arrivalMean),sD(serviceMean) {
 	/* generators */
 
-	generator = mt19937(time(nullptr));
+	generator = mt19937(seed);
 	iA = exponential_distribution<>(arrivalMean);
 	sD = exponential_distribution<>(serviceMean);
 	// 
@@ -16,6 +16,7 @@ Simulation::Simulation(double arrivalMean=1, double serviceMean=1, int packets=2
 	scheduleArrival();
 
 	eventLogStream << fixed << setprecision(2);
+	cout << fixed << setprecision(2);
 }
 
 void Simulation::scheduleEvent(EventType type, int id) {
