@@ -5,13 +5,13 @@
 #include "Simulation.h"
 
 void simulate(double arrivalMean, double serviceMean, int seed, int packets=200) {
-	int runs[3][2] = {
+	double runs[3][2] = {
 		{arrivalMean,serviceMean},
-		{arrivalMean*2,serviceMean},
-		{arrivalMean,serviceMean*2},
+		{arrivalMean/2,serviceMean},
+		{arrivalMean,serviceMean/2},
 	};
 	string filenames[3] = {
-		"iAT=ST", "iAT>ST", "iAT<ST"
+		"IATeST", "IATgST", "IATlST"
 	};
 
 	for (int i=0; i<3; i++) {
@@ -19,12 +19,16 @@ void simulate(double arrivalMean, double serviceMean, int seed, int packets=200)
 		sim.run();
 		sim.printStatistics();
 		cout<<'\n';
+		// sim.writeStatisticsToCSV("outputs/" + filenames[i] + ".csv");
 	}
 }
 
 
 int main() {
 	int seed = time(nullptr);
+	int n = 100;
 
-	simulate(1, 1, seed);
+	for (int i=0; i<n; i++) {
+		simulate(1, 1, seed+i*3);
+	}
 }
