@@ -4,7 +4,7 @@
 
 #include "Simulation.h"
 
-void simulate(double arrivalMean, double serviceMean, int seed, int packets=200) {
+void simulate(double arrivalMean, double serviceMean, int seed, int servers=1, int packets=1000) {
 	double runs[3][2] = {
 		{arrivalMean,serviceMean},
 		{arrivalMean/2,serviceMean},
@@ -15,7 +15,7 @@ void simulate(double arrivalMean, double serviceMean, int seed, int packets=200)
 	};
 
 	for (int i=0; i<3; i++) {
-		Simulation sim(runs[i][0], runs[i][1], seed, packets);
+		Simulation sim(runs[i][0], runs[i][1], servers, seed, packets);
 		sim.run();
 		sim.printStatistics();
 		cout<<'\n';

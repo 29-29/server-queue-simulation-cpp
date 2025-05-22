@@ -11,6 +11,7 @@
 
 #include "RandomGenExpoMean.h"
 #include "Event.h"
+#include "Server.h"
 
 using namespace std;
 
@@ -31,12 +32,13 @@ private:
 
 	/* Simulation parameters */
 	int maxPackets;
+	int servers;
 
 	/* Simulation state variables */
 	double clockTime=0.0; // current time
 	double prevEventTime=0.0; // to record the time of the last event
 	int lastPacketID=-1; // ID of the last packet
-	bool serverBusy=false;
+	int serversBusy=0; //
 	double lastQueueUpdateTime=0.0;
 
 	/* Simulation logs */
@@ -67,7 +69,7 @@ private:
 	void handleDeparture(const int& pid);
 
 public:
-	Simulation(const double& arrivalMean, const double& serviceMean, const int& seed, const int& packets);
+	Simulation(const double& arrivalMean, const double& serviceMean, const int& servers, const int& seed, const int& packets);
 
 	void run(); // main simulation loop
 	string eventLogs() { return eventLogStream.str(); }

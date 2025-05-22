@@ -1,6 +1,11 @@
 #include "Simulation.h"
 
-Simulation::Simulation(const double& arrivalMean=1, const double& serviceMean=1, const int& seed=time(nullptr), const int& packets=20):iA(1/arrivalMean),sD(1/serviceMean) {
+Simulation::Simulation(
+	const double& arrivalMean=1, 
+	const double& serviceMean=1, 
+	const int& _servers=1, 
+	const int& seed=time(nullptr), 
+	const int& packets=20):iA(1/arrivalMean),sD(1/serviceMean) {
 	/* generators */
 
 	genA = mt19937(seed+1);
@@ -8,6 +13,7 @@ Simulation::Simulation(const double& arrivalMean=1, const double& serviceMean=1,
 
 	/* simulation setup */
 	maxPackets = packets;
+	servers = _servers;
 	
 	scheduleArrival();
 
@@ -41,14 +47,15 @@ void Simulation::scheduleDeparture(const int& pid) {
 void Simulation::handleArrival(const int& pid) {
 	packetsArrived++;
 
-	if (serverBusy) {
+	// if all the servers are busy
+	if (!(servers-serversBusy)) {
 		packetIDQueue.push(pid);
 		// queue length update
 		weightedQueueLength += (clockTime - lastQueueUpdateTime) * packetIDQueue.size();
 		lastQueueUpdateTime = clockTime;
 	}
 	else {
-		serverBusy = true;
+		serversBusy++;
 		scheduleDeparture(pid);
 	}
 	scheduleArrival();
@@ -60,11 +67,11 @@ void Simulation::handleDeparture(const int& pid) {
 	delayTime += clockTime - arrivalTimes[pid];
 
 	// release server
-	serverBusy = false;
+	serversBusy--;
 	if (packetIDQueue.empty()) return;
 
 	// serve next packet in queue
-	serverBusy = true;
+	serversBusy++;
 	int nextPacket = packetIDQueue.front();
 	packetIDQueue.pop();
 	scheduleDeparture(nextPacket);
@@ -90,7 +97,8 @@ void Simulation::run() {
 			handleDeparture(currentEvent.getPacketID());
 		}
 		eventQueue.pop();
-		if (serverBusy) busyTime += clockTime - prevEventTime;
+		busyTime += (clockTime - prevEventTime) * serversBusy;
+		// server utilization has to be rethought
 
 	}
 
@@ -101,7 +109,7 @@ void Simulation::computeStatistics() {
 	avgWait = waitingTime / packetsServed;
 	avgDelay = delayTime / packetsServed;
 	avgQueueLength = weightedQueueLength / clockTime;
-	serverUtilization = busyTime / clockTime * 100;
+	serverUtilization = busyTime / clockTime * 100 * servers;
 	throughput = packetsServed / clockTime;
 }
 
