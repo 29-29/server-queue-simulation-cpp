@@ -8,4 +8,5 @@ int main() {
 	cout << fixed << setprecision(2);
 	Simulation sim;
 	sim.run();
+	cout << sim.eventLogs();
 }
