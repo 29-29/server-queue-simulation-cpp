@@ -35,6 +35,10 @@ private:
 	/* Simulation logs */
 	stringstream eventLogStream;
 
+	/* for statistics */
+	int packetsServed;
+	int packetsArrived;
+
 	priority_queue<Event, vector<Event>, greater<Event>> eventQueue;
 	queue<int> packetIDQueue;
 	vector<Packet> packetList;
@@ -67,6 +71,7 @@ private:
 	}
 
 	void handleDeparture(int pid) {
+		packetsServed++;
 		serverBusy = false;
 		if (packetIDQueue.empty()) {
 			scheduleArrival();
@@ -79,14 +84,21 @@ private:
 	}
 
 public:
-	Simulation(double arrivalMean=1, double serviceMean=1, int maxPackets=20): 
-		generator(time(nullptr)),
-		iA(arrivalMean),
-		sD(serviceMean), 
-		clockTime(0.0), 
-		maxPackets(maxPackets), 
-		lastPacketID(-1) {
-		// Initialize the event queue with the first arrival event
+
+	Simulation(double arrivalMean=1, double serviceMean=1, int packets=20) {
+		// generators
+		generator = mt19937(time(nullptr));
+		iA = exponential_distribution<>(arrivalMean);
+		sD = exponential_distribution<>(serviceMean);
+
+		// simulation setup
+		clockTime = 0;
+		maxPackets = packets;
+		lastPacketID = -1;
+		
+		// statistics setup
+		packetsServed = 0;
+
 		scheduleArrival();
 
 		eventLogStream << fixed << setprecision(2);
@@ -95,7 +107,9 @@ public:
 	// main simulation loop
 	void run() {
 		Event currentEvent = eventQueue.top();
-		while (lastPacketID < maxPackets) {
+		// while (lastPacketID < maxPackets) {
+		while (packetsServed < maxPackets) {
+
 			currentEvent = eventQueue.top();
 			clockTime = currentEvent.getTime();
 			eventLogStream << currentEvent.getPacketID() << "\t" << (currentEvent.getType() == ARRIVAL ? "_ARR" : "DEP_") << "\t" << currentEvent.getTime() << "\n";
@@ -105,11 +119,20 @@ public:
 				handleDeparture(currentEvent.getPacketID());
 			}
 			eventQueue.pop();
+
 		}
 	}
 
 	string eventLogs() {
 		return eventLogStream.str();
+	}
+
+	void printStatistics() {
+		cout
+		<< "Simulation time: " << clockTime << "\n"
+		<< "Packets arrived: " << lastPacketID << "\n"
+		<< "Packets served: " << packetsServed << "\n"
+		;
 	}
 };
 
