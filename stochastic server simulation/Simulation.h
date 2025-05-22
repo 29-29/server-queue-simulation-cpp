@@ -7,8 +7,7 @@
 #include <sstream>
 #include <iomanip>
 
-#include "Packet.h"
-// #include "RandomGenExpoMean.h"
+#include "RandomGenExpoMean.h"
 #include "Event.h"
 
 using namespace std;
@@ -19,7 +18,7 @@ private:
 	/* RNGs */
 	// RandomExpoMean iA; // inter-arrival generator
 	// RandomExpoMean sD; // service duration generator
-	random_device rd;
+	// 
 	mt19937 generator;
 	exponential_distribution<> iA;
 	exponential_distribution<> sD;
@@ -28,25 +27,28 @@ private:
 	int maxPackets;
 
 	/* Simulation state variables */
-	double clockTime; // current time
-	int lastPacketID; // ID of the last packet
-	bool serverBusy;
+	double clockTime=0.0; // current time
+	int lastPacketID=-1; // ID of the last packet
+	bool serverBusy=false;
 
 	/* Simulation logs */
 	stringstream eventLogStream;
 
 	/* for statistics */
-	int packetsServed;
-	int packetsArrived;
+	int packetsServed=0;
+	int packetsArrived=0;
+	double waitingTime=0;
 
 	priority_queue<Event, vector<Event>, greater<Event>> eventQueue;
 	queue<int> packetIDQueue;
-	vector<Packet> packetList;
+	vector<double> arrivalTimes;
 
 	void scheduleEvent(EventType type, int id) {
 		double time;
+
 		// if (type == ARRIVAL) time = clockTime + iA.getValue();
 		// else time = clockTime + sD.getValue();
+		// 
 		if (type == ARRIVAL) time = clockTime + iA(generator);
 		else time = clockTime + sD(generator);
 
@@ -73,10 +75,7 @@ private:
 	void handleDeparture(int pid) {
 		packetsServed++;
 		serverBusy = false;
-		if (packetIDQueue.empty()) {
-			scheduleArrival();
-			return;
-		}
+		if (packetIDQueue.empty()) return;
 		serverBusy = true;
 		int nextPacket = packetIDQueue.front();
 		packetIDQueue.pop();
@@ -85,20 +84,19 @@ private:
 
 public:
 
-	Simulation(double arrivalMean=1, double serviceMean=1, int packets=20) {
-		// generators
+	Simulation(double arrivalMean=1, double serviceMean=1, int packets=20):iA(arrivalMean),sD(serviceMean) {
+		/* generators */
+
 		generator = mt19937(time(nullptr));
 		iA = exponential_distribution<>(arrivalMean);
 		sD = exponential_distribution<>(serviceMean);
+		// 
+		// iA = RandomExpoMean(arrivalMean);
+		// sD = RandomExpoMean(serviceMean);
 
-		// simulation setup
-		clockTime = 0;
+		/* simulation setup */
 		maxPackets = packets;
-		lastPacketID = -1;
 		
-		// statistics setup
-		packetsServed = 0;
-
 		scheduleArrival();
 
 		eventLogStream << fixed << setprecision(2);

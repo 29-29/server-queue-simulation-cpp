@@ -9,6 +9,7 @@ int main() {
 	Simulation sim;
 	sim.run();
 
-	// cout << sim.eventLogs();
 	sim.printStatistics();
+	cout << "--------------------\n";
+	cout << sim.eventLogs();
 }
