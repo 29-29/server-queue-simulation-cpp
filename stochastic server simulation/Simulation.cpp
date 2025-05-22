@@ -102,6 +102,7 @@ void Simulation::run() {
 			handleDeparture(currentEvent.getPacketID());
 		}
 		eventQueue.pop();
+		if (serverBusy) busyTime += clockTime - prevEventTime;
 
 	}
 }
@@ -110,6 +111,8 @@ void Simulation::printStatistics() {
 	double avgWait = waitingTime / packetsServed;
 	double avgDelay = delayTime / packetsServed;
 	double avgQueueLength = weightedQueueLength / clockTime;
+	double serverUtilization = busyTime / clockTime * 100;
+	double throughput = packetsServed / clockTime;
 
 	cout
 	<< "Simulation time: " << clockTime << "\n"
@@ -118,5 +121,7 @@ void Simulation::printStatistics() {
 	<< "Average waiting time: " << avgWait << "\n"
 	<< "Average delay time: " << avgDelay << "\n"
 	<< "Average queue length: " << avgQueueLength << '\n'
+	<< "Server Utilization: " << serverUtilization << "%\n"
+	<< "Throughput: " << throughput << " packets/time\n"
 	;
 }

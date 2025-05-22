@@ -4,7 +4,7 @@
 
 #include "Simulation.h"
 
-void simulate(double arrivalMean, double serviceMean, int seed, int packets=20) {
+void simulate(double arrivalMean, double serviceMean, int seed, int packets=200) {
 	Simulation sim(arrivalMean, serviceMean, seed, packets);
 	sim.run();
 	sim.printStatistics();

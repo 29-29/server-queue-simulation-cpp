@@ -46,6 +46,7 @@ private:
 	double waitingTime=0;
 	double delayTime=0;
 	double weightedQueueLength=0;
+	double busyTime=0.0;
 
 	priority_queue<Event, vector<Event>, greater<Event>> eventQueue;
 	queue<int> packetIDQueue;
