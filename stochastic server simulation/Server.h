@@ -3,9 +3,8 @@ enum ServerStatus {
 	IDLE, BUSY
 };
 
-class Server
-{
-public:
-
+struct Server {
+	ServerStatus status=IDLE;
+	double busyTime=0.0;
 };
 
