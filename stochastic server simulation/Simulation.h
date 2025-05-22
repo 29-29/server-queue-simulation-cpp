@@ -43,94 +43,18 @@ private:
 	queue<int> packetIDQueue;
 	vector<double> arrivalTimes;
 
-	void scheduleEvent(EventType type, int id) {
-		double time;
-
-		// if (type == ARRIVAL) time = clockTime + iA.getValue();
-		// else time = clockTime + sD.getValue();
-		// 
-		if (type == ARRIVAL) time = clockTime + iA(generator);
-		else time = clockTime + sD(generator);
-
-		eventQueue.push(Event{ time, type, id });
-	}
-
-	void scheduleArrival() {
-		scheduleEvent(ARRIVAL, ++lastPacketID);
-	}
-
-	void scheduleDeparture(int pid) {
-		scheduleEvent(DEPARTURE, pid);
-	}
-
-	void handleArrival(int pid) {
-		if (serverBusy) packetIDQueue.push(pid);
-		else {
-			serverBusy = true;
-			scheduleDeparture(pid);
-		}
-		scheduleArrival();
-	}
-
-	void handleDeparture(int pid) {
-		packetsServed++;
-		serverBusy = false;
-		if (packetIDQueue.empty()) return;
-		serverBusy = true;
-		int nextPacket = packetIDQueue.front();
-		packetIDQueue.pop();
-		scheduleDeparture(nextPacket);
-	}
+	void scheduleEvent(EventType type, int id);
+	void scheduleArrival() { scheduleEvent(ARRIVAL, ++lastPacketID); }
+	void scheduleDeparture(int pid) { scheduleEvent(DEPARTURE, pid); }
+	void handleArrival(int pid);
+	void handleDeparture(int pid);
 
 public:
+	Simulation(double arrivalMean=1, double serviceMean=1, int packets=20);
 
-	Simulation(double arrivalMean=1, double serviceMean=1, int packets=20):iA(arrivalMean),sD(serviceMean) {
-		/* generators */
-
-		generator = mt19937(time(nullptr));
-		iA = exponential_distribution<>(arrivalMean);
-		sD = exponential_distribution<>(serviceMean);
-		// 
-		// iA = RandomExpoMean(arrivalMean);
-		// sD = RandomExpoMean(serviceMean);
-
-		/* simulation setup */
-		maxPackets = packets;
-		
-		scheduleArrival();
-
-		eventLogStream << fixed << setprecision(2);
-	}
-
-	// main simulation loop
-	void run() {
-		Event currentEvent = eventQueue.top();
-		// while (lastPacketID < maxPackets) {
-		while (packetsServed < maxPackets) {
-
-			currentEvent = eventQueue.top();
-			clockTime = currentEvent.getTime();
-			eventLogStream << currentEvent.getPacketID() << "\t" << (currentEvent.getType() == ARRIVAL ? "_ARR" : "DEP_") << "\t" << currentEvent.getTime() << "\n";
-			if (currentEvent.getType() == ARRIVAL) {
-				handleArrival(currentEvent.getPacketID());
-			} else {
-				handleDeparture(currentEvent.getPacketID());
-			}
-			eventQueue.pop();
-
-		}
-	}
-
-	string eventLogs() {
-		return eventLogStream.str();
-	}
-
-	void printStatistics() {
-		cout
-		<< "Simulation time: " << clockTime << "\n"
-		<< "Packets arrived: " << lastPacketID << "\n"
-		<< "Packets served: " << packetsServed << "\n"
-		;
-	}
+	void Simulation::run(); // main simulation loop
+	string eventLogs() { return eventLogStream.str(); }
+	void printStatistics();
 };
 
+#include "Simulation.cpp"
