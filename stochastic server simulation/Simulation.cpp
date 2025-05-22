@@ -10,6 +10,7 @@ Simulation::Simulation(
 
 	genA = mt19937(seed+1);
 	genS = mt19937(seed-1);
+	rho = serviceMean*_servers / arrivalMean;
 
 	/* simulation setup */
 	maxPackets = packets;
@@ -48,7 +49,7 @@ void Simulation::handleArrival(const int& pid) {
 	packetsArrived++;
 
 	// if all the servers are busy
-	if (!(servers-serversBusy)) {
+	if (serversBusy >= servers) {
 		packetIDQueue.push(pid);
 		// queue length update
 		weightedQueueLength += (clockTime - lastQueueUpdateTime) * packetIDQueue.size();
@@ -109,12 +110,13 @@ void Simulation::computeStatistics() {
 	avgWait = waitingTime / packetsServed;
 	avgDelay = delayTime / packetsServed;
 	avgQueueLength = weightedQueueLength / clockTime;
-	serverUtilization = busyTime / clockTime * 100 * servers;
+	serverUtilization = busyTime / clockTime * 100;
 	throughput = packetsServed / clockTime;
 }
 
 void Simulation::printStatistics() {
 	cout
+	<< "Traffic intensity (rho): " << rho << "\n"
 	<< "Simulation time: " << clockTime << "\n"
 	<< "Packets arrived: " << lastPacketID << "\n"
 	<< "Packets served: " << packetsServed << "\n"
@@ -143,12 +145,11 @@ void Simulation::writeStatisticsToCSV(const string& filename) {
 	if (fileEmpty(filename)) {
 		file
 		<< fixed << setprecision(4)
+		<< "TrafficIntensity(rho)"
 		<< "SimTime" << ','
 		<< "ServerBusyTime" << ','
 		<< "ArrivalRate" << ','
 		<< "ServiceRate" << ','
-		<< "ArrivalSeed" << ','
-		<< "ServiceSeed" << ','
 		<< "PacketsServed" << ','
 		<< "PacketsArrived" << ','
 		<< "AvgWaitingTime" << ','
@@ -161,12 +162,11 @@ void Simulation::writeStatisticsToCSV(const string& filename) {
 
 	file
 	<< fixed << setprecision(4)
+	<< rho << ','
 	<< clockTime << ','
 	<< busyTime << ','
 	<< 1. / iA.lambda() << ','
 	<< 1. / sD.lambda() << ','
-	<< genA.default_seed << ','
-	<< genS.default_seed << ','
 	<< maxPackets << ','
 	<< packetsArrived << ','
 	<< avgWait << ','

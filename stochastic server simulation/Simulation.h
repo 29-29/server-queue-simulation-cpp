@@ -52,6 +52,7 @@ private:
 	double weightedQueueLength=0;
 	double busyTime=0.0;
 
+	double rho; // (traffic intensity) rho = arrival rate / service rate
 	double avgWait;
 	double avgDelay;
 	double avgQueueLength;
