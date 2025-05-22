@@ -9,6 +9,7 @@
 #define    RANDOMGENEXPOMEAN_H
 #include <cmath>
 #include <cstdlib>
+#include <ctime>
 
 using namespace std;
 
@@ -27,10 +28,17 @@ private:
     void generate();
 };
 
+RandomExpoMean::RandomExpoMean(double mean) {
+    RandomExpoMean::Globalmean = mean;
+    RandomExpoMean::count = 0;
+    RandomExpoMean::average = 0;
+}
+
 void RandomExpoMean::generate() {
     //double uniform = rand() % int (60*Globalmean-1) + 1;
     //randomExpoMean = -1*log(1-(uniform/60));
    
+    srand(time(nullptr));
     double uniform = rand() % int (60*Globalmean-1) + 1;
     randomExpoMean = -1*log(1-(uniform/(60.0*Globalmean)))*Globalmean*60;
 }
