@@ -50,7 +50,8 @@ void Simulation::scheduleDeparture(const int& pid) {
 }
 
 void Simulation::handleArrival(const int& pid) {
-	arrivalTimes.push_back(clockTime);
+	// arrivalTimes.push_back(clockTime);
+	packetsArrived++;
 
 	if (serverBusy) {
 		packetIDQueue.push(pid);
