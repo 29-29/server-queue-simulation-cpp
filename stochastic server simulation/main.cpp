@@ -5,19 +5,26 @@
 #include "Simulation.h"
 
 void simulate(double arrivalMean, double serviceMean, int seed, int packets=200) {
-	Simulation sim(arrivalMean, serviceMean, seed, packets);
-	sim.run();
-	sim.printStatistics();
-	// cout << "------------------\n";
-	// cout << sim.eventLogs();
+	int runs[3][2] = {
+		{arrivalMean,serviceMean},
+		{arrivalMean*2,serviceMean},
+		{arrivalMean,serviceMean*2},
+	};
+	string filenames[3] = {
+		"iAT=ST", "iAT>ST", "iAT<ST"
+	};
+
+	for (int i=0; i<3; i++) {
+		Simulation sim(runs[i][0], runs[i][1], seed, packets);
+		sim.run();
+		sim.printStatistics();
+		cout<<'\n';
+	}
 }
+
 
 int main() {
 	int seed = time(nullptr);
-	int runs[3][2] = {{1,1}, {2,1}, {1,2}};
-	for (auto run : runs) {
-		cout << "iA=" << run[0] << " sD=" << run[1] << '\n';
-		simulate(run[0], run[1], seed);
-		cout << '\n';
-	}
+
+	simulate(1, 1, seed);
 }
