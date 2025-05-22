@@ -5,14 +5,6 @@ Simulation::Simulation(const double& arrivalMean=1, const double& serviceMean=1,
 
 	genA = mt19937(seed+1);
 	genS = mt19937(seed-1);
-	// iA = normal_distribution<>(arrivalMean);
-	// sD = normal_distribution<>(serviceMean);
-	// 
-	// iA = exponential_distribution<>(arrivalMean);
-	// sD = exponential_distribution<>(serviceMean);
-	// 
-	// iA = RandomExpoMean(arrivalMean);
-	// sD = RandomExpoMean(serviceMean);
 
 	/* simulation setup */
 	maxPackets = packets;
@@ -26,9 +18,6 @@ Simulation::Simulation(const double& arrivalMean=1, const double& serviceMean=1,
 double Simulation::scheduleEvent(const EventType& type, const int& id) {
 	double time;
 
-	// if (type == ARRIVAL) time = clockTime + iA.getValue();
-	// else time = clockTime + sD.getValue();
-	// 
 	if (type == ARRIVAL) time = clockTime + iA(genA);
 	else time = clockTime + sD(genS);
 
@@ -50,7 +39,6 @@ void Simulation::scheduleDeparture(const int& pid) {
 }
 
 void Simulation::handleArrival(const int& pid) {
-	// arrivalTimes.push_back(clockTime);
 	packetsArrived++;
 
 	if (serverBusy) {
@@ -88,7 +76,6 @@ void Simulation::handleDeparture(const int& pid) {
 
 void Simulation::run() {
 	Event currentEvent = eventQueue.top();
-	// while (lastPacketID < maxPackets) {
 	while (packetsServed < maxPackets) {
 
 		currentEvent = eventQueue.top();
