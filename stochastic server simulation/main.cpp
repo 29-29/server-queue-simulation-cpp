@@ -7,8 +7,8 @@
 void simulate(double arrivalMean, double serviceMean, int seed, int servers=1, int packets=1000) {
 	double runs[3][2] = {
 		{arrivalMean,serviceMean},
-		{arrivalMean/2,serviceMean},
-		{arrivalMean,serviceMean/2},
+		{arrivalMean/5,serviceMean},
+		{arrivalMean,serviceMean/5},
 	};
 	string filenames[3] = {
 		"IATeST", "IATgST", "IATlST"
@@ -26,9 +26,9 @@ void simulate(double arrivalMean, double serviceMean, int seed, int servers=1, i
 
 int main() {
 	int seed = time(nullptr);
-	int n = 100;
+	int n = 1;
 
 	for (int i=0; i<n; i++) {
-		simulate(1, 1, seed+i*3);
+		simulate(1, 0.01, seed+i*3, 10);
 	}
 }
