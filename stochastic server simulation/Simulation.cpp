@@ -3,7 +3,8 @@
 Simulation::Simulation(double arrivalMean=1, double serviceMean=1, int seed=time(nullptr), int packets=20):iA(1/arrivalMean),sD(1/serviceMean) {
 	/* generators */
 
-	generator = mt19937(seed);
+	genA = mt19937(seed+1);
+	genS = mt19937(seed-1);
 	// iA = normal_distribution<>(arrivalMean);
 	// sD = normal_distribution<>(serviceMean);
 	// 
@@ -28,8 +29,8 @@ double Simulation::scheduleEvent(EventType type, int id) {
 	// if (type == ARRIVAL) time = clockTime + iA.getValue();
 	// else time = clockTime + sD.getValue();
 	// 
-	if (type == ARRIVAL) time = clockTime + iA(generator);
-	else time = clockTime + sD(generator);
+	if (type == ARRIVAL) time = clockTime + iA(genA);
+	else time = clockTime + sD(genS);
 
 	eventQueue.push(Event{ time, type, id });
 	return time;

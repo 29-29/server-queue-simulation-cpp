@@ -4,7 +4,7 @@
 
 #include "Simulation.h"
 
-void simulate(double arrivalMean, double serviceMean, int seed, int packets=200) {
+void simulate(double arrivalMean, double serviceMean, int seed, int packets=20) {
 	Simulation sim(arrivalMean, serviceMean, seed, packets);
 	sim.run();
 	sim.printStatistics();
@@ -14,12 +14,10 @@ void simulate(double arrivalMean, double serviceMean, int seed, int packets=200)
 
 int main() {
 	int seed = time(nullptr);
-	cout << "iA=5 = sD=5\n";
-	simulate(5,5,seed);
-
-	cout << "\niA=3 < sD=7\n";
-	simulate(3,7,seed);
-
-	cout << "\niA=7 > sD=3\n";
-	simulate(7,3,seed);
+	int runs[3][2] = {{1,1}, {2,1}, {1,2}};
+	for (auto run : runs) {
+		cout << "iA=" << run[0] << " sD=" << run[1] << '\n';
+		simulate(run[0], run[1], seed);
+		cout << '\n';
+	}
 }

@@ -19,7 +19,8 @@ private:
 	// RandomExpoMean iA; // inter-arrival generator
 	// RandomExpoMean sD; // service duration generator
 	// 
-	mt19937 generator;
+	mt19937 genA;
+	mt19937 genS;
 	exponential_distribution<> iA;
 	exponential_distribution<> sD;
 	// 
