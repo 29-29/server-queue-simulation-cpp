@@ -1,6 +1,6 @@
 #include "Simulation.h"
 
-Simulation::Simulation(double arrivalMean=1, double serviceMean=1, int seed=time(nullptr), int packets=20):iA(1/arrivalMean),sD(1/serviceMean) {
+Simulation::Simulation(const double& arrivalMean=1, const double& serviceMean=1, const int& seed=time(nullptr), const int& packets=20):iA(1/arrivalMean),sD(1/serviceMean) {
 	/* generators */
 
 	genA = mt19937(seed+1);
@@ -23,7 +23,7 @@ Simulation::Simulation(double arrivalMean=1, double serviceMean=1, int seed=time
 	cout << fixed << setprecision(2);
 }
 
-double Simulation::scheduleEvent(EventType type, int id) {
+double Simulation::scheduleEvent(const EventType& type, const int& id) {
 	double time;
 
 	// if (type == ARRIVAL) time = clockTime + iA.getValue();
@@ -44,12 +44,12 @@ void Simulation::scheduleArrival() {
 // this is called only in these circumstances:
 // - a packet arrives and the queue is empty
 // - a packet has been served and the queue isn't empty
-void Simulation::scheduleDeparture(int pid) {
+void Simulation::scheduleDeparture(const int& pid) {
 	scheduleEvent(DEPARTURE, pid);
 	waitingTime += clockTime - arrivalTimes[pid];
 }
 
-void Simulation::handleArrival(int pid) {
+void Simulation::handleArrival(const int& pid) {
 	arrivalTimes.push_back(clockTime);
 
 	if (serverBusy) {
@@ -65,7 +65,7 @@ void Simulation::handleArrival(int pid) {
 	scheduleArrival();
 }
 
-void Simulation::handleDeparture(int pid) {
+void Simulation::handleDeparture(const int& pid) {
 	// updating statistics
 	packetsServed++;
 	delayTime += clockTime - arrivalTimes[pid];
@@ -105,15 +105,19 @@ void Simulation::run() {
 		if (serverBusy) busyTime += clockTime - prevEventTime;
 
 	}
+
+	computeStatistics();
+}
+
+void Simulation::computeStatistics() {
+	avgWait = waitingTime / packetsServed;
+	avgDelay = delayTime / packetsServed;
+	avgQueueLength = weightedQueueLength / clockTime;
+	serverUtilization = busyTime / clockTime * 100;
+	throughput = packetsServed / clockTime;
 }
 
 void Simulation::printStatistics() {
-	double avgWait = waitingTime / packetsServed;
-	double avgDelay = delayTime / packetsServed;
-	double avgQueueLength = weightedQueueLength / clockTime;
-	double serverUtilization = busyTime / clockTime * 100;
-	double throughput = packetsServed / clockTime;
-
 	cout
 	<< "Simulation time: " << clockTime << "\n"
 	<< "Packets arrived: " << lastPacketID << "\n"
@@ -124,4 +128,50 @@ void Simulation::printStatistics() {
 	<< "Server Utilization: " << serverUtilization << "%\n"
 	<< "Throughput: " << throughput << " packets/time\n"
 	;
+}
+
+void Simulation::writeStatisticsToCSV(const string& filename) {
+	ofstream file(filename, ios::app);
+	if (!file.is_open()) {
+		cerr << "Error opening file: " << filename << endl;
+		return;
+	}
+
+	if (file.tellp() == 0) {
+		file
+		<< fixed << setprecision(4)
+		<< "SimTime" << ','
+		<< "ServerBusyTime" << ','
+		<< "ArrivalRate" << ','
+		<< "ServiceRate" << ','
+		<< "ArrivalSeed" << ','
+		<< "ServiceSeed" << ','
+		<< "PacketsServed" << ','
+		<< "PacketsArrived" << ','
+		<< "AvgWaitingTime" << ','
+		<< "AvgDelay" << ','
+		<< "AvgQueueLength" << ','
+		<< "ServerUtilization" << ','
+		<< "Throughput" << '\n'
+		;
+	}
+
+	file
+	<< fixed << setprecision(4)
+	<< clockTime << ','
+	<< busyTime << ','
+	<< 1. / iA.lambda() << ','
+	<< 1. / sD.lambda() << ','
+	<< genA.default_seed << ','
+	<< genS.default_seed << ','
+	<< maxPackets << ','
+	<< packetsArrived << ','
+	<< avgWait << ','
+	<< avgDelay << ','
+	<< avgQueueLength << ','
+	<< serverUtilization << ','
+	<< throughput << '\n'
+	;
+
+	file.close();
 }

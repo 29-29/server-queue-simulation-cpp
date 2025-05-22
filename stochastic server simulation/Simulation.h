@@ -5,6 +5,7 @@
 #include <random>
 #include <string>
 #include <sstream>
+#include <fstream>
 #include <iomanip>
 
 #include "RandomGenExpoMean.h"
@@ -48,22 +49,30 @@ private:
 	double weightedQueueLength=0;
 	double busyTime=0.0;
 
+	double avgWait;
+	double avgDelay;
+	double avgQueueLength;
+	double serverUtilization;
+	double throughput;
+
 	priority_queue<Event, vector<Event>, greater<Event>> eventQueue;
 	queue<int> packetIDQueue;
 	vector<double> arrivalTimes;
 
-	double scheduleEvent(EventType type, int id);
+	double scheduleEvent(const EventType& type, const int& id);
 	void scheduleArrival();
-	void scheduleDeparture(int pid);
-	void handleArrival(int pid);
-	void handleDeparture(int pid);
+	void scheduleDeparture(const int& pid);
+	void handleArrival(const int& pid);
+	void handleDeparture(const int& pid);
 
 public:
-	Simulation(double arrivalMean, double serviceMean, int seed, int packets);
+	Simulation(const double& arrivalMean, const double& serviceMean, const int& seed, const int& packets);
 
 	void run(); // main simulation loop
 	string eventLogs() { return eventLogStream.str(); }
+	void computeStatistics();
 	void printStatistics();
+	void writeStatisticsToCSV(const string& filename);
 };
 
 #include "Simulation.cpp"
