@@ -22,8 +22,8 @@ public:
 private:
     double randomExpoMean;
     double Globalmean;
-    double average;
-    int count;
+    double average = 0;
+    int count = 0;
     void generate();
 };
 
@@ -33,12 +33,6 @@ void RandomExpoMean::generate() {
    
     double uniform = rand() % int (60*Globalmean-1) + 1;
     randomExpoMean = -1*log(1-(uniform/(60.0*Globalmean)))*Globalmean*60;
-}
-
-RandomExpoMean::RandomExpoMean(double mean) {
-    Globalmean = mean;
-    count =0;
-    average =0;
 }
 
 // this member function resets everything
