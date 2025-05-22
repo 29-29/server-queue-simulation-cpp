@@ -1,11 +1,14 @@
 #include "Simulation.h"
 
-Simulation::Simulation(double arrivalMean=1, double serviceMean=1, int seed=time(nullptr), int packets=20):iA(arrivalMean),sD(serviceMean) {
+Simulation::Simulation(double arrivalMean=1, double serviceMean=1, int seed=time(nullptr), int packets=20):iA(1/arrivalMean),sD(1/serviceMean) {
 	/* generators */
 
 	generator = mt19937(seed);
-	iA = exponential_distribution<>(arrivalMean);
-	sD = exponential_distribution<>(serviceMean);
+	// iA = normal_distribution<>(arrivalMean);
+	// sD = normal_distribution<>(serviceMean);
+	// 
+	// iA = exponential_distribution<>(arrivalMean);
+	// sD = exponential_distribution<>(serviceMean);
 	// 
 	// iA = RandomExpoMean(arrivalMean);
 	// sD = RandomExpoMean(serviceMean);
@@ -19,7 +22,7 @@ Simulation::Simulation(double arrivalMean=1, double serviceMean=1, int seed=time
 	cout << fixed << setprecision(2);
 }
 
-void Simulation::scheduleEvent(EventType type, int id) {
+double Simulation::scheduleEvent(EventType type, int id) {
 	double time;
 
 	// if (type == ARRIVAL) time = clockTime + iA.getValue();
@@ -29,12 +32,42 @@ void Simulation::scheduleEvent(EventType type, int id) {
 	else time = clockTime + sD(generator);
 
 	eventQueue.push(Event{ time, type, id });
+	return time;
+}
+
+void Simulation::scheduleArrival() {
+	double time = scheduleEvent(ARRIVAL, ++lastPacketID);
+	arrivalTimes.push_back(time);
+}
+
+// this is called only in these circumstances:
+// - a packet arrives and the queue is empty
+// - a packet has been served and the queue isn't empty
+void Simulation::scheduleDeparture(int pid) {
+	scheduleEvent(DEPARTURE, pid);
+	waitingTime += clockTime - arrivalTimes[pid];
+}
+
+void Simulation::handleArrival(int pid) {
+	arrivalTimes.push_back(clockTime);
+
+	if (serverBusy) {
+		packetIDQueue.push(pid);
+		// queue length update
+		weightedQueueLength += (clockTime - lastQueueUpdateTime) * packetIDQueue.size();
+		lastQueueUpdateTime = clockTime;
+	}
+	else {
+		serverBusy = true;
+		scheduleDeparture(pid);
+	}
+	scheduleArrival();
 }
 
 void Simulation::handleDeparture(int pid) {
 	// updating statistics
 	packetsServed++;
-	waitingTime += clockTime - arrivalTimes[pid];
+	delayTime += clockTime - arrivalTimes[pid];
 
 	// release server
 	serverBusy = false;
@@ -45,17 +78,10 @@ void Simulation::handleDeparture(int pid) {
 	int nextPacket = packetIDQueue.front();
 	packetIDQueue.pop();
 	scheduleDeparture(nextPacket);
-}
 
-void Simulation::handleArrival(int pid) {
-	arrivalTimes.push_back(clockTime);
-
-	if (serverBusy) packetIDQueue.push(pid);
-	else {
-		serverBusy = true;
-		scheduleDeparture(pid);
-	}
-	scheduleArrival();
+	// queue length update
+	weightedQueueLength += (clockTime - lastQueueUpdateTime) * packetIDQueue.size();
+	lastQueueUpdateTime = clockTime;
 }
 
 void Simulation::run() {
@@ -64,7 +90,10 @@ void Simulation::run() {
 	while (packetsServed < maxPackets) {
 
 		currentEvent = eventQueue.top();
+		prevEventTime = clockTime;
 		clockTime = currentEvent.getTime();
+
+		// handle event
 		eventLogStream << currentEvent.getPacketID() << "\t" << (currentEvent.getType() == ARRIVAL ? "_ARR" : "DEP_") << "\t" << currentEvent.getTime() << "\n";
 		if (currentEvent.getType() == ARRIVAL) {
 			handleArrival(currentEvent.getPacketID());
@@ -77,12 +106,16 @@ void Simulation::run() {
 }
 
 void Simulation::printStatistics() {
-	double avgWaitTime = waitingTime / packetsServed;
+	double avgWait = waitingTime / packetsServed;
+	double avgDelay = delayTime / packetsServed;
+	double avgQueueLength = weightedQueueLength / clockTime;
 
 	cout
 	<< "Simulation time: " << clockTime << "\n"
 	<< "Packets arrived: " << lastPacketID << "\n"
 	<< "Packets served: " << packetsServed << "\n"
-	<< "Average waiting time: " << avgWaitTime << "\n"
+	<< "Average waiting time: " << avgWait << "\n"
+	<< "Average delay time: " << avgDelay << "\n"
+	<< "Average queue length: " << avgQueueLength << '\n'
 	;
 }

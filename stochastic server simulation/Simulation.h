@@ -22,14 +22,19 @@ private:
 	mt19937 generator;
 	exponential_distribution<> iA;
 	exponential_distribution<> sD;
+	// 
+	// normal_distribution<> iA;
+	// normal_distribution<> sD;
 
 	/* Simulation parameters */
 	int maxPackets;
 
 	/* Simulation state variables */
 	double clockTime=0.0; // current time
+	double prevEventTime=0.0; // to record the time of the last event
 	int lastPacketID=-1; // ID of the last packet
 	bool serverBusy=false;
+	double lastQueueUpdateTime=0.0;
 
 	/* Simulation logs */
 	stringstream eventLogStream;
@@ -38,14 +43,16 @@ private:
 	int packetsServed=0;
 	int packetsArrived=0;
 	double waitingTime=0;
+	double delayTime=0;
+	double weightedQueueLength=0;
 
 	priority_queue<Event, vector<Event>, greater<Event>> eventQueue;
 	queue<int> packetIDQueue;
 	vector<double> arrivalTimes;
 
-	void scheduleEvent(EventType type, int id);
-	void scheduleArrival() { scheduleEvent(ARRIVAL, ++lastPacketID); }
-	void scheduleDeparture(int pid) { scheduleEvent(DEPARTURE, pid); }
+	double scheduleEvent(EventType type, int id);
+	void scheduleArrival();
+	void scheduleDeparture(int pid);
 	void handleArrival(int pid);
 	void handleDeparture(int pid);
 
