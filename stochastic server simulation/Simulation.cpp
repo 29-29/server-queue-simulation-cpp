@@ -130,6 +130,13 @@ void Simulation::printStatistics() {
 	;
 }
 
+bool fileEmpty(const string& filename) {
+	struct stat fileStat;
+	if (stat(filename.c_str(), &fileStat) != 0) return true;
+
+	return fileStat.st_size == 0;
+}
+
 void Simulation::writeStatisticsToCSV(const string& filename) {
 	ofstream file(filename, ios::app);
 	if (!file.is_open()) {
@@ -137,7 +144,7 @@ void Simulation::writeStatisticsToCSV(const string& filename) {
 		return;
 	}
 
-	if (file.tellp() == 0) {
+	if (fileEmpty(filename)) {
 		file
 		<< fixed << setprecision(4)
 		<< "SimTime" << ','

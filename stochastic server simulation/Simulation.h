@@ -7,6 +7,7 @@
 #include <sstream>
 #include <fstream>
 #include <iomanip>
+#include <sys/stat.h>
 
 #include "RandomGenExpoMean.h"
 #include "Event.h"
