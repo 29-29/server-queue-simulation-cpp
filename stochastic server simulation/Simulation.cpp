@@ -15,6 +15,7 @@ Simulation::Simulation(
 	/* simulation setup */
 	maxPackets = packets;
 	servers = _servers;
+	bufferLimit = _bufferLimit;
 	
 	scheduleArrival();
 
@@ -50,11 +51,16 @@ void Simulation::handleArrival(const int& pid) {
 
 	// if all the servers are busy
 	if (serversBusy >= servers) {
-		packetIDQueue.push(pid);
-		// queue length update
-		weightedQueueLength += (clockTime - lastQueueUpdateTime) * packetIDQueue.size();
-		lastQueueUpdateTime = clockTime;
+		// push to queue only if buffer limit hasn't been reached
+		if (packetIDQueue.size() < bufferLimit) {
+			packetIDQueue.push(pid);
+			// queue length update
+			weightedQueueLength += (clockTime - lastQueueUpdateTime) * packetIDQueue.size();
+			lastQueueUpdateTime = clockTime;
+		} else packetsDropped++;
 	}
+	// else one or more servers are free
+	// then serve that packet
 	else {
 		serversBusy++;
 		scheduleDeparture(pid);
@@ -112,6 +118,7 @@ void Simulation::computeStatistics() {
 	avgQueueLength = weightedQueueLength / clockTime;
 	serverUtilization = busyTime / clockTime * 100;
 	throughput = packetsServed / clockTime;
+	dropRate = double(packetsDropped) / double(packetsArrived);
 }
 
 void Simulation::printStatistics() {

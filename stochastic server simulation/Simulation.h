@@ -26,13 +26,11 @@ private:
 	mt19937 genS;
 	exponential_distribution<> iA;
 	exponential_distribution<> sD;
-	// 
-	// normal_distribution<> iA;
-	// normal_distribution<> sD;
 
 	/* Simulation parameters */
 	int maxPackets;
 	int servers;
+	int bufferLimit;
 
 	/* Simulation state variables */
 	double clockTime=0.0; // current time
@@ -47,6 +45,7 @@ private:
 	/* for statistics */
 	int packetsServed=0;
 	int packetsArrived=0;
+	int packetsDropped=0;
 	double waitingTime=0;
 	double delayTime=0;
 	double weightedQueueLength=0;
@@ -58,6 +57,7 @@ private:
 	double avgQueueLength;
 	double serverUtilization;
 	double throughput;
+	double dropRate;
 
 	priority_queue<Event, vector<Event>, greater<Event>> eventQueue;
 	queue<int> packetIDQueue;
@@ -70,7 +70,9 @@ private:
 	void handleDeparture(const int& pid);
 
 public:
-	Simulation(const double& arrivalMean, const double& serviceMean, const int& servers, const int& seed, const int& packets);
+	Simulation(const double& arrivalMean, const double& serviceMean,
+		const int& servers, const int& _bufferLimit, const int& seed,
+		const int& packets);
 
 	void run(); // main simulation loop
 	string eventLogs() { return eventLogStream.str(); }
