@@ -12,6 +12,7 @@
 #include "RandomGenExpoMean.h"
 #include "Event.h"
 #include "Server.h"
+#include "Statistics.h"
 
 using namespace std;
 
@@ -51,6 +52,7 @@ private:
 	double weightedQueueLength=0;
 	double busyTime=0.0;
 
+	Stats stats;
 	double rho; // (traffic intensity) rho = arrival rate / service rate
 	double avgWait;
 	double avgDelay;
@@ -69,6 +71,8 @@ private:
 	void handleArrival(const int& pid);
 	void handleDeparture(const int& pid);
 
+	void computeStatistics();
+
 public:
 	Simulation(const double& arrivalMean, const double& serviceMean,
 		const int& servers, const int& _bufferLimit, const int& seed,
@@ -76,9 +80,13 @@ public:
 
 	void run(); // main simulation loop
 	string eventLogs() { return eventLogStream.str(); }
-	void computeStatistics();
+
+	// simulation statistics
 	void printStatistics();
 	void writeStatisticsToCSV(const string& filename);
+
+	Stats getStatistics() const { return stats; }
+};
 };
 
 #include "Simulation.cpp"

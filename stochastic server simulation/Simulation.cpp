@@ -4,6 +4,7 @@ Simulation::Simulation(
 	const double& arrivalMean=1, 
 	const double& serviceMean=1, 
 	const int& _servers=1, 
+	const int& _bufferLimit=5, 
 	const int& seed=time(nullptr), 
 	const int& packets=20):iA(1/arrivalMean),sD(1/serviceMean) {
 	/* generators */
@@ -16,6 +17,12 @@ Simulation::Simulation(
 	maxPackets = packets;
 	servers = _servers;
 	bufferLimit = _bufferLimit;
+	
+	// stats initialize
+	stats.arrivalMean = arrivalMean;
+	stats.serviceMean = serviceMean;
+	stats.servers = _servers;
+	stats.bufferLimit = _bufferLimit;
 	
 	scheduleArrival();
 
@@ -119,69 +126,24 @@ void Simulation::computeStatistics() {
 	serverUtilization = busyTime / clockTime * 100;
 	throughput = packetsServed / clockTime;
 	dropRate = double(packetsDropped) / double(packetsArrived);
+
+	stats.simTime = clockTime;
+	stats.packetsArrived = packetsArrived;
+	stats.packetsServed = packetsServed;
+	stats.packetsDropped = packetsDropped;
+	stats.dropRate = dropRate;
+	stats.avgWait = avgWait;
+	stats.avgDelay = avgDelay;
+	stats.avgQueue = avgQueueLength;
+	stats.serverUtilization = serverUtilization;
+	stats.throughput = throughput;
 }
 
 void Simulation::printStatistics() {
-	cout
-	<< "Traffic intensity (rho): " << rho << "\n"
-	<< "Simulation time: " << clockTime << "\n"
-	<< "Packets arrived: " << lastPacketID << "\n"
-	<< "Packets served: " << packetsServed << "\n"
-	<< "Average waiting time: " << avgWait << "\n"
-	<< "Average delay time: " << avgDelay << "\n"
-	<< "Average queue length: " << avgQueueLength << '\n'
-	<< "Server Utilization: " << serverUtilization << "%\n"
-	<< "Throughput: " << throughput << " packets/time\n"
-	;
-}
-
-bool fileEmpty(const string& filename) {
-	struct stat fileStat;
-	if (stat(filename.c_str(), &fileStat) != 0) return true;
-
-	return fileStat.st_size == 0;
+	stats.printStatistics();
 }
 
 void Simulation::writeStatisticsToCSV(const string& filename) {
-	ofstream file(filename, ios::app);
-	if (!file.is_open()) {
-		cerr << "Error opening file: " << filename << endl;
-		return;
-	}
-
-	if (fileEmpty(filename)) {
-		file
-		<< fixed << setprecision(4)
-		<< "TrafficIntensity(rho)"
-		<< "SimTime" << ','
-		<< "ServerBusyTime" << ','
-		<< "ArrivalRate" << ','
-		<< "ServiceRate" << ','
-		<< "PacketsServed" << ','
-		<< "PacketsArrived" << ','
-		<< "AvgWaitingTime" << ','
-		<< "AvgDelay" << ','
-		<< "AvgQueueLength" << ','
-		<< "ServerUtilization" << ','
-		<< "Throughput" << '\n'
-		;
-	}
-
-	file
-	<< fixed << setprecision(4)
-	<< rho << ','
-	<< clockTime << ','
-	<< busyTime << ','
-	<< 1. / iA.lambda() << ','
-	<< 1. / sD.lambda() << ','
-	<< maxPackets << ','
-	<< packetsArrived << ','
-	<< avgWait << ','
-	<< avgDelay << ','
-	<< avgQueueLength << ','
-	<< serverUtilization << ','
-	<< throughput << '\n'
-	;
-
-	file.close();
+	stats.writeToCSV(filename);
+}
 }
