@@ -87,6 +87,28 @@ public:
 
 	Stats getStatistics() const { return stats; }
 };
+
+class SimulationN {
+	int N;
+	// simulation parameters
+	double arrivalMean;
+	double serviceMean;
+	int servers;
+	int bufferLimit;
+	int originalSeed;
+	int maxPackets;
+	double rho;
+	// cumulative statistics
+	Stats stats;
+public:
+	SimulationN(const int& _N, const double& _arrivalMean,
+		const double& _serviceMean, const int& _servers, const int& _bufferLimit,
+		const int& _seed, const int& _packets);
+
+	void run();
+	void printStatistics();
+	void getStatistics(Simulation* sim);
+	void accumulate();
 };
 
 #include "Simulation.cpp"

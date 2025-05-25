@@ -146,4 +146,46 @@ void Simulation::printStatistics() {
 void Simulation::writeStatisticsToCSV(const string& filename) {
 	stats.writeToCSV(filename);
 }
+
+// SIMULATION N
+
+SimulationN::SimulationN(const int& _N, const double& _arrivalMean, const double& _serviceMean, const int& _servers, const int& _bufferLimit, const int& _seed, const int& _packets):
+N(_N),
+arrivalMean(_arrivalMean),
+serviceMean(_serviceMean),
+servers(_servers),
+bufferLimit(_bufferLimit),
+originalSeed(_seed),
+maxPackets(_packets)
+{
+	rho = serviceMean*_servers / arrivalMean;
+
+	// simulation parameters in statistics
+	stats.arrivalMean = _arrivalMean;
+	stats.serviceMean = _serviceMean;
+	stats.servers = _servers;
+	stats.bufferLimit = _bufferLimit;
+}
+
+void SimulationN::run() {
+	for (int i=0; i<N; i++) {
+		Simulation sim(arrivalMean, serviceMean, servers, bufferLimit,
+			(originalSeed+(3*N)*i), maxPackets);
+		sim.run();
+		getStatistics(&sim);
+	}
+	// printStatistics();
+	accumulate();
+}
+
+void SimulationN::printStatistics() {
+	stats.printStatistics();
+}
+
+void SimulationN::getStatistics(Simulation* sim) {
+	stats += sim->getStatistics();
+}
+
+void SimulationN::accumulate() {
+	stats.accumulate(N);
 }
