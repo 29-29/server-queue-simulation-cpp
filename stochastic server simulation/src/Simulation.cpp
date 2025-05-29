@@ -1,17 +1,17 @@
 #include "Simulation.h"
 
 Simulation::Simulation(
-	const double& arrivalMean=1, 
-	const double& serviceMean=1, 
+	const double& arrivalRate=1, 
+	const double& serviceRate=1, 
 	const int& _servers=1, 
 	const int& _bufferLimit=5, 
 	const int& seed=time(nullptr), 
-	const int& packets=20):iA(1/arrivalMean),sD(1/serviceMean) {
+	const int& packets=20):iA(arrivalRate),sD(serviceRate) {
 	/* generators */
 
 	genA = mt19937(seed+1);
 	genS = mt19937(seed-1);
-	rho = serviceMean*_servers / arrivalMean;
+	rho = arrivalRate / (serviceRate * _servers);
 
 	/* simulation setup */
 	maxPackets = packets;
@@ -19,8 +19,8 @@ Simulation::Simulation(
 	bufferLimit = _bufferLimit;
 	
 	// stats initialize
-	stats.arrivalMean = arrivalMean;
-	stats.serviceMean = serviceMean;
+	stats.arrivalRate = arrivalRate;
+	stats.serviceRate = serviceRate;
 	stats.servers = _servers;
 	stats.bufferLimit = _bufferLimit;
 	
@@ -28,6 +28,12 @@ Simulation::Simulation(
 
 	eventLogStream << fixed << setprecision(2);
 	cout << fixed << setprecision(2);
+}
+
+Simulation::~Simulation() {
+	while (!eventQueue.empty()) eventQueue.pop();
+	queue<int>().swap(packetIDQueue);
+	vector<double>().swap(arrivalTimes);
 }
 
 double Simulation::scheduleEvent(const EventType& type, const int& id) {
@@ -123,7 +129,7 @@ void Simulation::computeStatistics() {
 	avgWait = waitingTime / packetsServed;
 	avgDelay = delayTime / packetsServed;
 	avgQueueLength = weightedQueueLength / clockTime;
-	serverUtilization = busyTime / clockTime * 100;
+	serverUtilization = busyTime / (servers * clockTime);
 	throughput = packetsServed / clockTime;
 	dropRate = double(packetsDropped) / double(packetsArrived);
 
@@ -161,8 +167,8 @@ maxPackets(_packets)
 	rho = serviceMean*_servers / arrivalMean;
 
 	// simulation parameters in statistics
-	stats.arrivalMean = _arrivalMean;
-	stats.serviceMean = _serviceMean;
+	stats.arrivalRate = _arrivalMean;
+	stats.serviceRate = _serviceMean;
 	stats.servers = _servers;
 	stats.bufferLimit = _bufferLimit;
 }
@@ -188,4 +194,12 @@ void SimulationN::getStatistics(Simulation* sim) {
 
 void SimulationN::accumulate() {
 	stats.accumulate(N);
+}
+
+void SimulationN::writeStatsToCSV(const string& filename) {
+	stats.writeToCSV(filename);
+}
+
+Stats SimulationN::thisStats() {
+	return stats;
 }

@@ -45,12 +45,15 @@ void Stats::writeToCSV(const string& filename) {
 		file
 		<< fixed << setprecision(4)
 		<< "TrafficIntensity(rho)" << ','
+		<< "Servers" << ','
+		<< "BufferLimit" << ','
 		<< "SimTime" << ','
 		<< "ArrivalRate" << ','
 		<< "ServiceRate" << ','
 		<< "PacketsArrived" << ','
 		<< "PacketsServed" << ','
 		<< "PacketsDropped" << ','
+		<< "DropRate" << ','
 		<< "AvgWaitingTime" << ','
 		<< "AvgDelay" << ','
 		<< "AvgQueueLength" << ','
@@ -61,13 +64,16 @@ void Stats::writeToCSV(const string& filename) {
 
 	file
 	<< fixed << setprecision(4)
-	<< serviceMean*servers / arrivalMean << ','
+	<< arrivalRate / serviceRate * servers << ','
+	<< servers << ','
+	<< bufferLimit << ','
 	<< simTime << ','
-	<< 1 / arrivalMean << ','
-	<< 1. / serviceMean << ','
+	<< arrivalRate << ','
+	<< serviceRate << ','
 	<< packetsArrived << ','
 	<< packetsServed << ','
 	<< packetsDropped << ','
+	<< dropRate << ','
 	<< avgWait << ','
 	<< avgDelay << ','
 	<< avgQueue << ','
@@ -80,7 +86,7 @@ void Stats::writeToCSV(const string& filename) {
 
 void Stats::printStatistics() {
 cout
-<< "Traffic intensity (rho): " << serviceMean*servers / arrivalMean << "\n"
+<< "Traffic intensity (rho): " << arrivalRate / serviceRate * servers << "\n"
 << "Average simulation time: " << simTime << "\n"
 << "Average packets arrived: " << packetsArrived << "\n"
 << "Average packets served: " << packetsServed << "\n"

@@ -1,13 +1,13 @@
 #pragma once
-#include <queue>
-#include <iostream>
-#include <vector>
-#include <random>
-#include <string>
-#include <sstream>
-#include <fstream>
-#include <iomanip>
-#include <sys/stat.h>
+#include <queue>			// for event queue
+#include <iostream>		// for printing to console
+#include <vector>			// for storing arrival times
+#include <random>			// for generating arrival and service times
+#include <string>			// for writing statistics
+#include <sstream>		// for event logging
+#include <fstream>		// for file handling
+#include <iomanip>		// for float accuracy
+#include <sys/stat.h> // for checking if file is empty
 
 #include "RandomGenExpoMean.h"
 #include "Event.h"
@@ -71,9 +71,10 @@ private:
 	void computeStatistics();
 
 public:
-	Simulation(const double& arrivalMean, const double& serviceMean,
+	Simulation(const double& arrivalRate, const double& serviceRate,
 		const int& servers, const int& _bufferLimit, const int& seed,
 		const int& packets);
+	~Simulation();
 
 	void run(); // main simulation loop
 	string eventLogs() { return eventLogStream.str(); }
@@ -106,6 +107,8 @@ public:
 	void printStatistics();
 	void getStatistics(Simulation* sim);
 	void accumulate();
+	void writeStatsToCSV(const string& filename);
+	Stats thisStats();
 };
 
 #include "Simulation.cpp"

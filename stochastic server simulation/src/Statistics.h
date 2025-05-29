@@ -9,8 +9,8 @@ using namespace std;
 class Stats {
 public:
 	// input
-	double arrivalMean;
-	double serviceMean;
+	double arrivalRate;
+	double serviceRate;
 	int servers;
 	int bufferLimit;
 
