@@ -3,3 +3,4 @@ outputs
 outputs/*
 .vscode
 *.xlsx
+graph/
